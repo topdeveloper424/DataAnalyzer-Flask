@@ -1,0 +1,1157 @@
+{% extends "base.html" %}
+{% block title %}Analyize Page{% endblock %}
+<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+<script>
+    toastr.options = {
+        "positionClass": "toast-top-full-width"
+    }
+</script>
+
+{% block asset_block %}
+    {% assets "analyize_css" %}
+    <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}" />
+    {% endassets %}
+
+    {% assets "analyize_js" %}
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+{% endblock %}
+
+
+{% block page_title %}Analyize{% endblock %}
+{% block page_url %}Analyize{% endblock %}
+
+{% block body %}
+<script src="https://blueimp.github.io/JavaScript-Templates/js/tmpl.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-1.8.0.min.js"></script>
+<style>
+    .borderless td, .borderless th {
+        border: none;
+    }
+    .borderless td {
+        padding: 5px;
+    }
+</style>
+
+<div class="pcoded-inner-content">
+    <div class="main-body">
+        <div class="page-wrapper">
+            <!-- Page-body start -->
+            <div class="page-body">
+                <!-- File upload card end -->
+                <ul class="nav nav-tabs md-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#home3" role="tab">Prepare</a>
+                        <div class="slide"></div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#profile3" role="tab">Display Graph</a>
+                        <div class="slide"></div>
+                    </li>
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content card-block">
+                    <div class="tab-pane active" id="home3" role="tabpanel">
+                        <br>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                        <label>Uploaded Files</label>
+                                        <select class="form-control selectFileCtrl" id="dropper-default" >
+                                            {% for file in files %}
+                                                {% if file.find("@.csv") == -1 %}
+                                                <option value="{{ file }}">{{ file }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                </div>
+
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                        <label>Columns : </label>
+                                        <select class="form-control selectColumnCtrl1" id="dropper-default">
+                                            {% for col in cols_meta.columns_meta[1:] %}
+                                                <option value="{{ col.col_idx }}">{{ col.text }}</option>
+                                            {% endfor %}
+                                        </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label>&nbsp;&nbsp;&nbsp;&nbsp;</label><br>
+                                    <button class="btn btn-danger" onclick="addCol()">Add</button>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label>&nbsp;&nbsp;&nbsp;&nbsp;</label><br>
+                                    <button class="btn btn-success" onclick="analyize()">Analyize</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="selectChart">Select a Chart</label>
+                                    <select class="form-control" id="selectChart">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="selectChart">Select a Chart</label>
+                                    <input type="text" class="form-control" id="chartName" placeholder="Enter Chart Name">
+                                </div>
+
+                            </div>
+                        </div>
+
+            
+                        
+                            <table id="order-table" class="table table-striped table-bordered nowrap" data-page-length='10'>
+                                <thead>
+                                    <tr>
+                                        <th width="50%">File Name</th>
+                                        <th width="2%">Col Name</th>
+                                        <th width="20%">Display Name</th>
+                                        <th width="10%">Remove</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="prepareTable">
+                                </tbody>
+
+                            </table>
+
+                    </div>
+                    <div class="tab-pane" id="profile3" role="tabpanel">
+                        <br>
+
+                        <div class="row">
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-sm btn-primary" onclick="onSaveAllSelection()">
+                                    Save selection
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-sm btn-danger" onclick="onRemoveAll()">
+                                    Remove all graphs
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-sm btn-warning" id="btnToggle">Toggle Buttons</button>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-2"></div>
+                                    <div class="col-md-7">
+                                        <div class="form-group">
+                                                <label>Phase Shift (ms):</label>
+                                                <input type="number" class="form-control" id="phaseShift">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group"> 
+                                            <label>&nbsp;</label><br>
+                                            <button type="button" class="btn btn-sm btn-primary" onclick="onCalculatePhaseShift()">Get phase shift</button>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
+                                                                    
+                        <!-- graph containers -->
+                        <div class="row" id="graphContainer">
+                            <div class="row">
+                                <div id="graph"></div>
+                            </div>
+                        </div>
+
+
+
+                    </div>
+                </div>
+
+            </div>
+            <!-- Page-body end -->
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" tabindex="-1" role="dialog" id="exportModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title d-inline" style="display: inline">Export options</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="exportOption" id="allField" value="allField" onclick="exportOptionChanged(false)">
+                    <label class="form-check-label" for="allField">
+                      Extract all fields
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="exportOption" id="thisField" value="thisField" checked onclick="exportOptionChanged(true)">
+                    <label class="form-check-label" for="thisField">
+                      Extract only this field
+                    </label>
+                  </div>
+                  <label for="txtExportName">File Name: </label>
+                  <input type="text" class="form-control" id="txtExportName">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="exportData()">Ok</button>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <div class="modal fade" tabindex="-1" role="dialog" id="settingsModal" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title d-inline" style="display: inline">Graph Settings</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="timeOption" id="fromFile" value="fromFile" onclick="timeOptionChanged(false)">
+                      <label class="form-check-label" for="fromFile">
+                        From file
+                      </label>
+                    </div>
+                    
+                      <div class="form-check">
+                          <input class="form-check-input" type="radio" name="timeOption" id="fromInput" value="fromInput" checked onclick="timeOptionChanged(true)">
+                          <label class="form-check-label" for="fromInput">
+                          From user input
+                          </label>
+                      </div>
+                      <div class="row">
+                          <div class="col-md-6 form-group">
+                              <label for="txtExportName">Samples per row: </label>
+                              <input type="number" value="1" class="form-control" id="numSamplesPerRow">
+                          </div>
+                          <div class="col-md-6 form-group">
+                              <label for="txtExportName">Time between samples (ms): </label>
+                              <input type="number" value="6" class="form-control" id="numTimeBetweenSamples">
+                          </div>
+                      </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="onSettings()">Ok</button>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+{% endblock %}
+
+{% block custom_js %}
+
+{% raw %}
+<script type="text/x-tmpl" id="tmpl-demo">
+    <h3>{%=o.title%}</h3>
+</script>
+<script type="text/x-tmpl" id="tmpl-control">
+    <div class="btn_areas">
+        <div class="row">
+            <div class="col-md-12">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <table class="borderless" border="0">
+                    <tbody>
+                        <tr>
+                            <td style="width: 150px" align="right">
+                                <h5>SD:</h5>
+                            </td>
+                            <td style="width: 150px" align="left"><h5 id="stdev{%=o.id%}"></h5></td>
+                            <td style="width: 150px" align="right"><h5>Median:</h5></td>
+                            <td style="width: 150px" align="left"><h5 id=median{%=o.id%}></h5></td>
+                            <td style="width: 150px" align="right"><h5>Peak to Peak:</h5></td>
+                            <td style="width: 150px" align="left"><h5 id=p2p{%=o.id%}></h5></td>
+                            <td style="width: 150px" align="right"><h5>Data Frequency:</h5></td>
+                            <td style="width: 150px" align="left"><h5 id=df{%=o.id%}></h5></td>
+                            <td><button type="button" class="btn btn-sm btn-default" onclick="openSettingsModal({%=o.id%})">
+                                    Settings
+                                </button>
+                            </td>
+                            <td><button type="button" class="btn btn-sm btn-success" onclick="openExportModal('{%=o.id%}')">
+                                    Export
+                                </button>
+                            </td>
+                            <td><button type="button" class="btn btn-sm btn-danger" onclick="removeChart({%=o.id%})">
+                                    Remove
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 150px" align="right">
+                                <h5>Peak:</h5>
+                            </td>
+                            <td>
+                                <input value="{%=o.peak%}" style="width: 70px" class="form-control" type="number" id=peak{%=o.id%} />
+                            </td>
+                            <td>
+                                <div class="custom-control custom-radio">
+                                    <input {% if (o.isAbove){ %}checked{% } %} value="1" type="radio" id="above{%=o.id%}" name="peakRadio{%=o.id%}" class="custom-control-input">
+                                    <label class="custom-control-label" for="above{%=o.id%}">Above</label>
+                                    <br>
+                                    <input {% if (!o.isAbove){ %}checked{% } %} type="radio" id="below{%=o.id%}" value="0" name="peakRadio{%=o.id%}" class="custom-control-input">
+                                    <label class="custom-control-label" for="below{%=o.id%}">Below</label>
+                                </div>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-info" onclick="setPeaks({%=o.id%})">
+                                    Set
+                                </button>
+                            </td>
+                            <td rowspan="2" colspan="2">
+                                We can use col1,col2,col3. For example col1^2+col2 * 3<br />
+                                <label for="formula{%=o.id%}">
+                                    <input type="text" class="form-control" id="formula{%=o.id%}" value="{%=o.formula%}" /></label><br />
+                                <button type="button" class="btn btn-sm btn-info" onclick="applyFormula({%=o.id%})">
+                                    Apply Formula
+                                </button>
+                            </td>
+                            <td rowspan="2" colspan="5">
+                                <ul>
+                                    {% for (var i = 0; i < o.graphList.length; i++) { %}
+                                    <li><strong>col{%=i+1 %}</strong> : {%=o.graphList[i].file %} ({%=o.graphList[i].title %})</li>
+                                    {% } %}
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 150px" align="right">
+                                <h5>Range:</h5>
+                            </td>
+                            <td align="left" >
+                                <input value="{%=o.xstart%}" class="form-control" style="width: 70px" type="number" id=xstart{%=o.id%}>
+                                <input value="{%=o.xend%}" class="form-control" style="width: 70px" type="number" id=xend{%=o.id%}>
+                            </td>
+                            <td><button type="button" class="btn btn-sm btn-info" onclick="applyLayout({%=o.id%})">
+                                    Apply
+                                </button>
+                            </td>
+                            <td>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+             </div>
+         </div>
+    </div>
+    <br>
+    <br>
+    <br>
+</script>
+{% endraw %}
+<script>
+
+    class Board {
+        constructor() {
+            this.chartList = []
+            this.lastChartId = 0
+        }
+
+        addChart(chart) {
+            if (chart.id == 0)
+                chart.id = this.getNextChartId()
+
+            this.chartList.push(chart)
+
+            this.refreshChartSelect()
+        }
+
+        /**
+         * when add a graph, we have to select the chart from the chart list
+         * so when add/remove graph, we have to refresh chart list
+         * Of course, we can update the chart list when the "Add a graph" dialog is shown
+         *
+         * */
+        refreshChartSelect() {
+            $('#selectChart').find('option').remove().end().append('<option value="0">(Add as New Chart)</option>');
+
+            this.chartList.forEach(function(chart){
+                $('#selectChart').find('option').end().append('<option value="' + chart.id + '">' + chart.title + '</option>');
+            });
+        }
+
+        getNextChartId() {
+            return ++this.lastChartId
+        }
+
+
+        save() {
+            var obj = {
+                chartList: this.chartList,
+                lastChartId: this.lastChartId
+            }
+            sessionStorage.board = JSON.stringify(obj);
+        }
+
+        load() {
+            if (sessionStorage.board) {
+                var obj = JSON.parse(sessionStorage.board)
+
+                // console.log(obj)
+
+                var chartList = this.chartList = []
+                obj.chartList.forEach(function(chartObj){
+                    var chart = new Chart(chartObj)
+                    chart.render()
+                    chartList.push(chart)
+                })
+
+
+                this.lastChartId = obj.lastChartId
+                return this
+            }
+        }
+
+        /**
+         *
+         */
+        getChartById(chartId) {
+            var filtered = this.chartList.filter(function(eachChart, index, arr){
+                return eachChart.id == chartId;
+            });
+            // console.log("find chart by id = " + chartId)
+            // console.log("chart length = " + filtered.length)
+            if (filtered.length) return filtered[0]
+            return null
+        }
+
+        removeChart(chartId) {
+            var filtered = this.chartList.filter(function(eachChart, index, arr){
+                return eachChart.id != chartId;
+            });
+            this.chartList = filtered
+
+            $('#con_graph' + chartId).remove();
+
+            this.save()
+        }
+
+    }
+
+    class Chart {
+        /*
+        constructor(chartId, title) {
+            this.id = chartId
+            this.title = title
+            this.graphList = []
+        }
+        var xstart;
+        var xend;
+        var peak;
+        var isAbove;
+        var isBelow;
+
+        */
+
+        constructor(obj) {
+            Object.assign(this, obj)
+            if (this.xstart == undefined)
+                this.xstart = 0
+            if (this.xend == undefined)
+                this.xend = 0
+
+        }
+
+        addGraph(graph) {
+            this.graphList.push(graph)
+            this.xstart = 0
+            this.xend = Math.max(graph.data.length, this.xend)
+
+        }
+
+
+        getGraphList() {
+            return this.graphList
+        }
+
+        /**
+         *
+         */
+        render() {
+            var divId = "graph" + this.id
+            if ($('#' + divId).length == 0) { // if div does not exists, add div
+                $('#graphContainer').append('<div id="con_' + divId + '" class="row graph_area"><div id="' + divId + '"></div></div>');
+                $('#con_' + divId).append(tmpl("tmpl-control", this))
+            } else {
+                $('#' + divId).next('.btn_areas').html(tmpl("tmpl-control", this))
+            }
+
+            var graphDiv = document.getElementById(divId)
+
+            var chart = this
+
+            var xMaxLen = Math.max.apply(Math, this.graphList.map(function(graph){return graph.data.length;}))
+            var chartTitle = this.graphList.map(function(graph){return graph.title;});
+
+            var config = {displaylogo: false, modeBarButtonsToRemove: ['sendDataToCloud', 'toImage']}
+            var layout = {
+                    title: chartTitle[0],
+                    xaxis: {
+                        range: [0, xMaxLen],
+                        rangeslider: {range: [0, xMaxLen]}
+                    },
+                    yaxis: {}
+                };
+
+
+            var i = 0
+            this.graphList.forEach(function(graph) {
+                i++
+                var graphData = chart.prepData(graph, graph.display_col)
+                // graphData.name = "col" + i;
+
+                if (i == 1)
+                    Plotly.newPlot(graphDiv, graphData, layout, config)
+                else
+                    Plotly.plot(graphDiv, graphData, layout, config)
+
+                // @TODO
+                // getinfo
+            })
+
+            if (this.formula){
+                var graphData = this.getFormulaData()
+                // console.log(graphData)
+
+                Plotly.plot(graphDiv, graphData, layout, config)
+            }
+
+            var chart = this
+            graphDiv.on('plotly_relayout', function(evtData) {
+                if (evtData['xaxis.range'] != null) {
+                    let xstart = evtData['xaxis.range'][0];
+                    let xend = evtData['xaxis.range'][1];
+
+                    chart.xstart = xstart
+                    chart.xend = xend
+
+                    board.save()
+
+                    /*
+                    $.get('/getinfo', {
+                        file: graph.file,
+                        col_idx: graph.col,
+                        xstart: graph.xstart,
+                        xend: graph.xend
+                    }).done(function(data){
+                        // @TODO
+                        // updateValues();
+                    })
+                    */
+                    chart.getInfo();
+
+                }
+            });
+
+            let new_xstart = this.xstart;
+            let new_xend = this.xend;
+
+            Plotly.relayout(graphDiv, {
+                xaxis: {
+                    range: [new_xstart, new_xend],
+                    rangeslider: {
+                        range: [new_xstart, new_xend]
+                    }
+                },
+                yaxis: {}
+            })
+            Plotly.relayout(graphDiv, 'xaxis.range', [new_xstart, new_xend])
+            Plotly.relayout(graphDiv, 'xaxis.rangslider.range', [new_xstart, new_xend])
+
+            this.getInfo();
+
+        }
+
+        getInfo() {
+            var graph = this
+            if (this.graphList.length > 0) {
+                var firstGraph = this.graphList[0]
+
+                $.get('/getinfo', {
+                    file: firstGraph.file,
+                    col_idx: firstGraph.col,
+                    xstart: this.xstart,
+                    xend: this.xend
+                }).done( function (data) {
+                    // console.log('update values');
+                    graph.updateValues(firstGraph, data);
+                });
+            }
+        }
+
+        updateValues(graph, data) {
+            var suffix = this.id
+            let i;
+            let last = -1, cur;
+            let total = 0;
+            let cnt = 0;
+            for (i = Math.ceil(this.xstart); i < Math.floor(this.xend); i ++){
+                if ((Number(graph.data[i]) > this.peak && this.isAbove) ||
+                    (Number(graph.data[i]) < this.peak && this.isBelow)){
+                        cur = i;
+
+                        if (last != -1)
+                        {
+                            total += (cur - last);
+                            cnt ++;
+                        }
+
+                        last = cur;
+                }
+            }
+
+            data.p2p = Math.round(total / (cnt == 0 ? 1 : cnt));
+
+            let deno = Number($('#numSamplesPerRow').val()) * Number($('#numTimeBetweenSamples').val()) * data.p2p;
+            if (deno == 0)
+                data.df = 0;
+            else
+                data.df = (1 / deno * 1000).toFixed(2);
+
+            $('#stdev' + suffix).text(data.stdev);
+            $('#p2p' + suffix).text(data.p2p);
+            $('#median' + suffix).text(data.median);
+            $('#df' + suffix).text(data.df);
+
+            $('#xstart' + suffix).val(data.xstart);
+            $('#xend' + suffix).val(data.xend);
+        }
+
+        prepData(graph, title) {
+            let x = [];
+            let y = [];
+
+            for (let i = 0; i < graph.data.length; i ++) {
+                x.push(i + 1);
+                y.push(graph.data[i]);
+            }
+
+            return [{
+                x: x,
+                y: y,
+                mode: 'lines+markers',
+                type: 'scattergl',
+                name: title?title:graph.title,
+                marker: {
+                    symbol: 'circle'
+                }
+            }];
+        }
+
+        getFormulaData() {
+            let x = [];
+            let y = [];
+            var minLen = Math.min.apply(Math, this.graphList.map(function(graph){return graph.data.length;}))
+
+            for (let i = 0; i < minLen; i ++) {
+                x.push(i + 1);
+
+                try {
+                    var yVal;
+                    var defineStates = "";
+                    for (let j = 1; j <= this.graphList.length; j++) {
+                        window.eval("var col" + j + " = " + this.graphList[j-1].data[i]  + ";");
+                    }
+                    eval(defineStates);
+                    yVal = eval(this.formula);
+                    y.push(yVal);
+                } catch (e) {
+                    console.log(e)
+                    if (e instanceof SyntaxError) {
+                        // alert(e.message);
+                        console.log(e.message)
+                        break;
+                    }
+
+                }
+
+                // y.push(graph.data[i]);
+            }
+
+
+            return [{
+                x: x,
+                y: y,
+                mode: 'lines+markers',
+                type: 'scattergl',
+                name: "Formula",
+                marker: {
+                    symbol: 'circle'
+                }
+            }];
+        }
+
+        getChartDiv() {
+            return document.getElementById("graph" + this.id)
+        }
+    }
+
+    class Graph {
+        constructor (file, col,display_col, graph_id, xstart, xend, data, peak, isAbove, isBelow, colors) {
+            this.file = file;
+            this.col = col;
+            this.graph_id = graph_id;
+            this.data = data;
+            this.display_col = display_col;
+
+            this.colors = colors;
+            this.title = ''
+        }
+
+        /**
+         * load graph and add chart
+         *
+         * @param file
+         * @param col
+         * @param graphTitle
+         * @param chartId
+         */
+        load(file, col,display_col, graphTitle, chartId) {
+            this.file = file, this.col = col, this.title = graphTitle,this.display_col = display_col; 
+
+            var graph = this
+
+            $.get('/getdata', {file: file, col_idx: col}).done(function(data){
+                if (data.status != "success")
+                    return;
+
+                // create graph container
+                graph.file = file;
+                graph.col_idx = col
+                graph.data = data.data
+
+                var chart;
+
+                var isNewChart = chartId == 0;
+                if (isNewChart) {
+                    chart = new Chart({id: 0, title: graphTitle, graphList: []})
+
+                } else {
+                    chart = board.getChartById(chartId)
+                }
+                chart.addGraph(graph)
+
+                if (isNewChart)
+                    board.addChart(chart)
+                chart.render()
+                board.save()
+
+            })
+        }
+
+
+    }
+
+    var data_from = JSON.parse('{{ cols_meta | tojson | safe}}');
+    var cols_meta = data_from.columns_meta;
+
+    var new_data_from = JSON.parse('{{ new_cols_meta | tojson | safe}}');
+    var new_cols_meta = new_data_from.columns_meta;
+
+    var d3colors = Plotly.d3.scale.category10();
+
+    var d3LastColor = '#FF00FF'
+
+    var selectedChartId = -1
+
+
+    function addCol(){
+        var data_from = JSON.parse('{{ cols_meta | tojson | safe}}');
+        var cols_meta = data_from.columns_meta;
+        var file = $(".selectFileCtrl").val();
+        var col = $(".selectColumnCtrl1").val();
+        var table = document.getElementById("prepareTable");
+        var row = table.insertRow(-1);
+        var len = table.getElementsByTagName("tr").length;
+        len = len - 1;
+        var cell0 = row.insertCell(0);
+        var cell1 = row.insertCell(1);
+        var cell2 = row.insertCell(2);
+        var cell3 = row.insertCell(3);
+        cell0.innerHTML = file;
+        cell1.innerHTML = cols_meta[col]['text'];
+        cell2.innerHTML = "<input value='"+cols_meta[col]['text']+"' style='text-algin:center; width:100%; height=100%'><input type='hidden' value='"+col+"'>";
+        cell3.innerHTML = "<button class='btn btn-sm btn-primary' onclick='removeCol("+len+")'>remove</button>";
+
+    }
+
+    function removeCol(num){
+        var prepareTable =  document.getElementById("prepareTable");
+        prepareTable.deleteRow(num);
+        var ch = prepareTable.children;
+        for (var i = num; i < prepareTable.children.length; i++) {
+            var temp = ch[i];
+            var td = temp.getElementsByTagName("td");
+            td[3].innerHTML = "<button class='btn btn-sm btn-primary' onclick='removeCol("+i+")'>remove</button>";
+
+        }
+
+    }
+    function analyize(){
+        var prepareTable =  document.getElementById("prepareTable");
+        var trs = prepareTable.getElementsByTagName("tr");
+        if(trs.length == 0){
+            alert("Please Add Colums !");
+            return;
+        }
+        var chartName = document.getElementById("chartName").value;
+        var chartId = $('#selectChart').val();
+        if(chartId==0 && chartName.trim() == ""){
+            alert("Please Enter Chart Name !");
+            return;
+        }
+        
+        var memory_array = []
+
+        
+        var graph = new Graph()
+        var tds = trs[0].getElementsByTagName("td");
+        var file0 = tds[0].innerHTML;
+        var inputs = tds[2].getElementsByTagName("input");
+        var display_col = inputs[0].value;
+        var col_idx0 = inputs[1].value;
+        memory_array.push({"file":file0, "col_idx":col_idx0,"display":display_col,"chartName":chartName,"chartId": chartId})
+        graph.load(file0, col_idx0,display_col, chartName, chartId);
+        var options = document.getElementById("selectChart").getElementsByTagName("option");
+        var updated_id = options.length;
+        if(parseInt(chartId) != 0){
+            updated_id = chartId;
+        }
+        if(trs.length >= 2){
+            for(var i = 1; i < trs.length; i ++){
+                var tds = trs[i].getElementsByTagName("td");
+                var file = tds[0].innerHTML;
+                var inputs = tds[2].getElementsByTagName("input");
+                var display_col = inputs[0].value;
+                var col_idx = inputs[1].value;
+                var graph = new Graph()
+                memory_array.push({"file":file, "col_idx":col_idx,"display":display_col, "chartName":chartName,"chartId": updated_id})
+                graph.load(file, col_idx,display_col, chartName, updated_id);
+            }
+
+        }
+
+        console.log(memory_array);
+        $.get('/saveRecent', {
+            recents: JSON.stringify(memory_array),
+        }).done( function (data) {
+            // console.log('update values');
+//            graph.updateValues(firstGraph, data);
+        });
+
+        $('.nav-tabs a[href="#profile3"]').tab('show');
+        var rows = prepareTable.getElementsByTagName("tr");
+        for(var i = rows.length - 1; i >= 0; i --){
+            prepareTable.deleteRow(i)
+        }
+
+    }
+
+
+    var board;
+
+    function onSaveAllSelection() {
+        board.save()
+    }
+
+    function onRemoveAll(){
+        sessionStorage.clear();
+        document.location.reload();
+    }
+
+    function onCalculatePhaseShift(){
+
+        // console.log(board.chartList);
+        if (board.chartList.length < 2 ||
+            !board.chartList[0].graphList[0].colors ||
+            !board.chartList[1].graphList[0].colors){
+            console.log("not matching");
+            $('#phaseShift').val(0);
+            return;
+        }
+
+        var firstGraph = board.chartList[0].graphList[0];
+        var secondGraph = board.chartList[1].graphList[0];
+
+        let first = 0, second = 0;
+        for (i = Math.ceil(board.chartList[0].xstart); i < Math.floor(board.chartList[0].xend); i ++)
+            if (firstGraph.colors[i] == d3LastColor){
+                first = i;
+                break;
+            }
+        for (i = Math.ceil(board.chartList[1].xstart); i < Math.floor(board.chartList[1].xend); i ++)
+            if (secondGraph.colors[i] == d3LastColor){
+                second = i;
+                break;
+            }
+
+        $('#phaseShift').val(Math.abs(first-second) *
+        Number($('#numSamplesPerRow').val()) * Number($('#numTimeBetweenSamples').val()));
+    }
+
+    function setPeaks(chartId) {
+        var chart = board.getChartById(chartId)
+
+
+        let above = document.getElementById('above' + chartId);
+        let below = document.getElementById('below' + chartId);
+
+        let peak = $('#peak' + chartId);
+
+        chart.isAbove = above.checked;
+        chart.isBelow = below.checked;
+        chart.peak = Number(peak.val());
+
+        // console.log(chart)
+
+        if (!chart.isAbove && !chart.isBelow) {
+            toastr.warning("Select Above or Below.");
+            return;
+        }
+
+        // console.log("colors");
+        var graph = chart.graphList[0]
+        let colors = graph.data.map(function(d) {
+            if ((Number(d) > chart.peak && chart.isAbove) ||
+                (Number(d) < chart.peak && chart.isBelow))
+                return d3LastColor;
+            else
+                return d3colors(0);
+        });
+
+        // console.log(colors);
+        graph.colors = colors;
+
+        var totalColors = []
+        chart.graphList.map(function(graph, idx){
+            if (idx == 0)
+                totalColors.push(colors)
+            else {
+                var sameColors = []
+                var graphColor = d3colors(idx)
+                for (var i = 0; i < graph.data.length; i++) {
+                    sameColors.push(graphColor)
+                }
+                totalColors.push(sameColors)
+            }
+        })
+        Plotly.restyle(chart.getChartDiv(), 'marker.color', totalColors);
+        chart.getInfo();
+
+        board.save()
+
+    }
+
+    function applyLayout(chartId) {
+        var chart = board.getChartById(chartId)
+
+        let new_xstart = $('#xstart' + chartId).val();
+        let new_xend = $('#xend' + chartId).val();
+
+        if (Number(new_xstart) >= Number(new_xend)){
+            toastr.warning("Invalid range");
+            return;
+        }
+
+        Plotly.relayout(chart.getChartDiv(),
+            {
+                xaxis: {
+                    range: [new_xstart, new_xend],
+                    rangeslider: {
+                        range: [new_xstart, new_xend]
+                    }
+                },
+                yaxis: { }
+            });
+        chart.xstart = new_xstart;
+        chart.xend = new_xend;
+
+        chart.getInfo();
+
+        board.save();
+    }
+
+    function applyFormula(chartId) {
+        var chart = board.getChartById(chartId)
+        var formula = $('#formula' + chartId).val();
+        if (!formula) {
+            alert("Input formula text");
+            $('#formula' + chartId).focus()
+            return;
+        }
+        chart.formula = formula;
+        chart.render()
+        board.save()
+    }
+
+    function openSettingsModal(chartId)
+    {
+        selectedChartId = chartId;
+        $("#settingsModal").modal();
+    }
+
+    function onSettings()
+    {
+        var chart = board.getChartById(selectedChartId)
+
+        chart.getInfo()
+    }
+
+    function timeOptionChanged(fromInput)
+    {
+        if (fromInput){
+            $("#numSamplesPerRow").prop('disabled', false);
+            $("#numTimeBetweenSamples").prop('disabled', false);
+        }
+        else{
+            $("#numSamplesPerRow").prop('disabled', true);
+            $("#numTimeBetweenSamples").prop('disabled', true);
+        }
+    }
+
+    var selected_col
+    var selected_file
+    var selected_xstart
+    var selected_xend
+
+    function openExportModal(chartId) {
+
+        var chart = board.getChartById(chartId)
+
+        selected_col = chart.graphList[0].col;
+        selected_file = chart.graphList[0].file;
+
+        selected_xstart = chart.getChartDiv().layout.xaxis.range[0];
+        selected_xend = chart.getChartDiv().layout.xaxis.range[1];
+
+        $("#thisField").prop("checked", true).trigger("click");
+
+        $("#exportModal").modal();
+    }
+
+    function exportOptionChanged(this_only)
+    {
+        if (this_only)
+            $("#txtExportName").val(selected_file.replace(".csv", "_extracted_" + cols_meta[selected_col].text + "_.csv"));
+        else
+            $("#txtExportName").val(selected_file.replace(".csv", "_extracted_all_.csv"));
+    }
+
+    function exportData() {
+        alert("ssaa");
+        let thisOnly = document.getElementById('thisField').checked;
+        let exportname = $("#txtExportName").val();
+        $.get('/exportdata', {
+            exportname: exportname,
+            file: selected_file,
+            xstart: selected_xstart,
+            xend: selected_xend,
+            col_idx: selected_col,
+            this_only: thisOnly
+        }).done( function (data) {
+            if (data.status == "success")
+                toastr.success("Exported to " + data.file);
+        });
+    }
+
+    function removeChart(chartId) {
+        board.removeChart(chartId)
+    }
+
+    function onSaveAllSelection(){
+        var graphs = [];
+
+        board.chartList.forEach(function(chart){
+            graphs.push({
+                file: chart.graphList[0].file,
+                col: chart.graphList[0].col,
+                xstart: chart.xstart,
+                xend: chart.xend
+            });
+        });
+
+        $.post('/saveallselection',
+        { graphs: JSON.stringify(graphs) },
+        function(data, status) {
+            if (data.status != "success")
+                return;
+            toastr.success("Exported to " + data.file_name);
+        });
+    }
+    function getParam(name){
+        if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
+            return decodeURIComponent(name[1]);
+    }    
+
+    $(function() {
+
+
+        board = new Board();
+
+        var recent_data = getParam('recent_data');
+        if(typeof recent_data !== 'undefined'){
+            var recent_json = JSON.parse(recent_data)
+            var real_id = recent_json
+            sessionStorage.clear();
+
+            var chartId = 0;
+            
+            var graph = new Graph()
+            graph.load(recent_json[0]['file'], recent_json[0]['col_idx'],recent_json[0]['display'], recent_json[0]['chartName'], chartId);
+            console.log(recent_json[0])
+            if(recent_json.length >1){
+                for(var i = 1; i < recent_json.length; i ++){
+                    var graph = new Graph()
+                    graph.load(recent_json[i]['file'], recent_json[i]['col_idx'],recent_json[i]['display'], recent_json[i]['chartName'],1);
+                }
+            }
+            $('.nav-tabs a[href="#profile3"]').tab('show');
+        }else{
+            board.load();
+            board.refreshChartSelect();
+
+        }
+
+
+
+
+        $('#btnToggle').click(function(){
+            var data = {
+                "title": "test"
+            }
+            var result = tmpl("tmpl-demo", data)
+            $('.btn_areas').toggle()
+        })
+    })
+
+</script>
+
+{% endblock %}

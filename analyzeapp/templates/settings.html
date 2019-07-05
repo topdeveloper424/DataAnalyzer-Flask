@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Settings Page{% endblock %}
+{% block asset_block %}
+    {% assets "settings_css" %}
+    <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}" />
+    {% endassets %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.10.4/typeahead.bundle.min.js"></script>
+
+    {% assets "settings_js" %}
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+
+{% endblock %}
+
+
+{% block page_title %}Settings{% endblock %}
+{% block page_url %}Settings{% endblock %}
+
+{% block body %}
+<div class="pcoded-inner-content">
+    <div class="main-body">
+        <div class="page-wrapper">
+            <!-- Page-body start -->
+            <div class="page-body">
+                <!-- File upload card end -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Settings</h5>
+                    </div>
+                    <div class="card-block">
+                        <div class="row">
+                            <div class="col-sm-12 col-xl-5 m-b-30">
+                                <h4 class="sub-title">Recent Files Number</h4>
+                                <select name="select" class="form-control form-control-primary" id="recent_num">
+                                    <option value="">Select One Value Only</option>
+                                    <option value="1" {% if recent_number == 1 %} selected {% endif %}>1 file</option>
+                                    <option value="2" {% if recent_number == 2 %} selected {% endif %}>2 files</option>
+                                    <option value="3" {% if recent_number == 3 %} selected {% endif %}>3 files</option>
+                                    <option value="4" {% if recent_number == 4 %} selected {% endif %}>4 files</option>
+                                    <option value="5" {% if recent_number == 5 %} selected {% endif %}>5 files</option>
+                                    <option value="6" {% if recent_number == 6 %} selected {% endif %}>6 files</option>
+                                    <option value="7" {% if recent_number == 7 %} selected {% endif %}>7 files</option>
+                                    <option value="8" {% if recent_number == 8 %} selected {% endif %}>8 files</option>
+                                    <option value="9" {% if recent_number == 9 %} selected {% endif %}>9 files</option>
+                                    <option value="10" {% if recent_number == 10 %} selected {% endif %}>10 files</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-12 col-xl-5 m-b-30">
+                                <h4 class="sub-title">Reload Last File</h4>
+                                <div class="form-radio m-b-30">
+                                    <div class="radio radiofill radio-success radio-inline">
+                                        <label>
+                                            <input type="radio" name="radio" id="last_check" {% if reload_last == True %} checked {% endif %}>
+                                            <i class="helper"></i>Yes
+                                        </label>
+                                    </div>
+                                    <div class="radio radiofill radio-success radio-inline">
+                                        <label>
+                                            <input type="radio" name="radio" id="last_uncheck" {% if reload_last == False %} checked {% endif %}>
+                                            <i class="helper"></i>No
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-12 col-xl-2 m-b-30">
+                                <h4 class="sub-title">&nbsp;</h4>
+                                <button class="btn btn-primary" onclick="changeSetting()">Change</button>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+                <!-- Base Style table end -->
+
+            </div>
+            <!-- Page-body end -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block custom_js %}
+<script>
+function changeSetting(){
+    var recent_num = document.getElementById("recent_num").value;
+    var last_check = document.getElementById("last_check").checked;
+    var last_uncheck = document.getElementById("last_uncheck").checked;
+    console.log(last_check);
+    console.log(last_uncheck);
+    $.get('/change_setting', {
+        recent_num: recent_num,
+        reload_last: last_check,
+    }).done( function (data) {
+        if(data != ""){
+            alert("successfully changed !");
+        }
+        // console.log('update values');
+    });
+
+
+
+}
+
+</script>
+
+{% endblock %}

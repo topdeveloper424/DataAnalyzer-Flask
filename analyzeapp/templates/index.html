@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+{% block asset_block %}
+    {% assets "common_css" %}
+    <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}" />
+    {% endassets %}
+
+    <link rel="stylesheet" href="https://www.amcharts.com/lib/3/plugins/export/export.css" type="text/css" media="all" />
+    {% assets "common_js" %}
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+    <script src="https://www.amcharts.com/lib/3/amcharts.js"></script>
+    {% assets "jschart" %}
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+    <script src="https://www.amcharts.com/lib/3/plugins/export/export.min.js"></script>
+    {% assets "jslayout" %}
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+
+{% endblock %}
+
+
+{% block page_title %}Dashboard{% endblock %}
+{% block page_url %}Dashboard{% endblock %}
+
+{% block body %}
+<div class="pcoded-inner-content">
+    <!-- Main-body start -->
+    <div class="main-body">
+        <div class="page-wrapper">
+            <!-- Page-body start -->
+            <div class="page-body">
+                <div class="row">
+                    <!-- task, page, download counter  start -->
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card">
+                            <div class="card-block">
+                                <div class="row align-items-center">
+                                    <div class="col-8">
+                                        <h4 class="text-c-purple">{{total_counter}} files</h4>
+                                        <h6 class="text-muted m-b-0">All Uploaded Files</h6>
+                                    </div>
+                                    <div class="col-4 text-right">
+                                        <i class="fa fa-briefcase f-28"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-c-purple">
+                                <div class="row align-items-center">
+                                    <div class="col-9">
+                                        <p class="text-white m-b-0"></p>
+                                    </div>
+                                    <div class="col-3 text-right">
+                                        <i class="fa fa-line-chart text-white f-16"></i>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card">
+                            <div class="card-block">
+                                <div class="row align-items-center">
+                                    <div class="col-8">
+                                        <h4 class="text-c-green">0</h4>
+                                        <h6 class="text-muted m-b-0">Recent Files</h6>
+                                    </div>
+                                    <div class="col-4 text-right">
+                                        <i class="fa fa-calendar-check-o f-28"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-c-green">
+                                <div class="row align-items-center">
+                                    <div class="col-9">
+                                        <p class="text-white m-b-0">0% </p>
+                                    </div>
+                                    <div class="col-3 text-right">
+                                        <i class="fa fa-line-chart text-white f-16"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card">
+                            <div class="card-block">
+                                <div class="row align-items-center">
+                                    <div class="col-8">
+                                        <h4 class="text-c-red">{{loaded_counter}}</h4>
+                                        <h6 class="text-muted m-b-0">Loaded Files</h6>
+                                    </div>
+                                    <div class="col-4 text-right">
+                                        <i class="fa fa-hand-o-up f-28"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-c-red">
+                                <div class="row align-items-center">
+                                    <div class="col-9">
+                                        <p class="text-white m-b-0">
+                                            {% set proc =100*loaded_counter/total_counter  %}
+                                            ({{'%0.2f' % proc|float}}%) 
+                                        </p>
+                                    </div>
+                                    <div class="col-3 text-right">
+                                        <i class="fa fa-line-chart text-white f-16"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card">
+                            <div class="card-block">
+                                <div class="row align-items-center">
+                                    <div class="col-8">
+                                        <h4 class="text-c-blue">{{unloaded_counter}}</h4>
+                                        <h6 class="text-muted m-b-0">Un-loaded Files</h6>
+                                    </div>
+                                    <div class="col-4 text-right">
+                                        <i class="fa fa-hand-o-down f-28"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-c-blue">
+                                <div class="row align-items-center">
+                                    <div class="col-9">
+                                        <p class="text-white m-b-0">
+                                            {% set proc =100*unloaded_counter/total_counter  %}
+                                            ({{'%0.2f' % proc|float}}%) 
+                                        </p>
+                                    </div>
+                                    <div class="col-3 text-right">
+                                        <i class="fa fa-line-chart text-white f-16"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- task, page, download counter  end -->
+
+                    <!--  sale analytics start -->
+                    <div class="col-xl-6 col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><label class="label label-info">Recent Charts</label></h3>
+                            </div>
+                            <div class="card-block">
+                                <ul>
+                                    {% for i in range(0,len) %}
+                                    <li>
+                                        <div class="row">
+                                            <div class="col-md-10">
+                                                {{recent_charts[i][0].chartName}}
+                                            </div>
+                                            <div class="col-md-2">
+                                                <a href="analyze?recent_data={{recents_str[i]}}">
+                                                    <button class="btn btn-sm btn-danger">
+                                                        Analyize
+                                                    </button>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <br>
+                                        
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                <button class="btn btn-sm btn-success">Clear History</button>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-6 col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3><label class="label label-info">Lastest Chart</label></h3>
+                                </div>
+                                <div class="card-block">
+                                    {% if len > 0: %}
+                                    <h6>{{recent_charts[len-1][0].chartName}}</h6>
+                                    {% for chart in recent_charts[len-1] %}
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label class="label label-warning">file name :</label>
+                                                <span>{{chart.file}}</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label class="label label-warning">column display name :</label>
+                                                <span>{{chart.display}}</span>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                    {% endfor %}
+                                        <a href = "analyze?recent_data={{recents_str[len-1]}}">
+                                            <button class="btn btn-sm btn-success" >Load Last</button>
+                                        </a>
+
+                                    {% endif %}
+    
+                                </div>
+                            </div>
+                        </div>
+    
+    
+
+                </div>
+            </div>
+            <!-- Page-body end -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}

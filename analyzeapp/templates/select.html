@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Files Page{% endblock %}
+{% block asset_block %}
+    {% assets "files_css" %}
+    <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}" />
+    {% endassets %}
+
+    {% assets "files_js" %}
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+
+{% endblock %}
+
+
+{% block page_title %}Input Files{% endblock %}
+{% block page_url %}Input Files{% endblock %}
+
+{% block body %}
+<div class="pcoded-inner-content">
+    <div class="main-body">
+        <div class="page-wrapper">
+            <!-- Page-body start -->
+            <div class="page-body">
+                <!-- File upload card end -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Uploaded Files</h5>
+                        <span>You can upload, delete, analyize.</span>
+                        <form action="/upload" method="post" enctype="multipart/form-data">
+                            <input type="file" name="files[]" id="fileupload" multiple="multiple">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <button class="btn btn-danger btn-round waves-effect waves-light" type="submit">upload</button>
+                        </form>
+                    </div>
+                    <div class="card-block">
+                        <div class="dt-responsive table-responsive">
+                            <table id="base-style" class="table table-striped table-bordered nowrap">
+                                <thead>
+                                    <tr>
+                                        <th>File Name</th>
+                                        <th>Uploaded Datetime</th>
+                                        <th>Status</th>
+                                        <th>Load/Unload</th>
+                                        <th>Remove</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                        {% for val in values %}
+                                            <tr>
+                                                <td>{{ val.name.replace('@','') }}</td>
+                                                <td>{{ val.created }}</td>
+                                                <td>{% if val.status == True %} <label class="label label-danger">Loaded</label> {% else %} <label class="label label-inverse">Unloaded</label> {% endif %}</td>
+                                                <td><button class="btn btn-success btn-sm btn-round waves-effect waves-light" onclick="unload('{{val.name}}')">load/unload</button></td>
+                                                <td><button class="btn btn-inverse btn-sm btn-round waves-effect waves-light" onclick="removeFile('{{val.name}}')">remove</button></td>
+                                            </tr>
+                                        {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- Base Style table end -->
+
+            </div>
+            <!-- Page-body end -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block custom_js %}
+<script>
+    var csrf_token = $('input[type="hidden"]').val();
+    $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': csrf_token }, data: { csrf_token: csrf_token} });
+
+    function removeFile(fileName){
+        
+        $.get('/remove', {
+            fileName: fileName,
+            }).done( function (data) {
+                console.log(data);
+                location.reload();
+                // console.log('update values');
+            });
+    }
+
+    function unload(fileName){
+        $.get('/unload', {
+            fileName: fileName,
+            }).done( function (data) {
+                console.log(data);
+                location.reload();
+            // console.log('update values');
+        });
+
+    }
+
+    function upload(){
+        var form_data = new FormData();
+            var ins = document.getElementById('fileupload').files.length;
+            for (var x = 0; x < ins; x++) {
+                form_data.append("files[]", document.getElementById('fileupload').files[x]);
+            }
+            $.ajax({
+                url: '/upload', // point to server-side PHP script 
+                dataType: 'text', // what to expect back from the PHP script
+                cache: false,
+                contentType: false,
+                processData: false,
+                data: form_data,
+                type: 'post',
+                success: function (response) {
+                    location.reload();
+                },
+                error: function (response) {
+                    location.reload();
+                }
+            });        
+    }
+
+</script>
+
+{% endblock %}
