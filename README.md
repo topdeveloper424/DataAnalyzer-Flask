@@ -8,6 +8,7 @@ This is flask app to analysis electricvales
 ![Screenshot_44](https://user-images.githubusercontent.com/40516126/60730775-7cc9c280-9f78-11e9-9eaa-696107ec9b33.png)
 
 
+
 # Requirements
 
 webassets==0.12.1
@@ -45,7 +46,12 @@ gunicorn
 # install requirements
 `` pip install -r requirements.txt ``
 
+- DB creating
+``python manage.oy createdb``
+
 # Analysis
 
 ![Screenshot_43](https://user-images.githubusercontent.com/40516126/60732345-560d8b00-9f7c-11e9-80e7-156e8e430635.png)
+
+
 
