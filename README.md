@@ -44,10 +44,18 @@ gunicorn
 
 
 # install requirements
-`` pip install -r requirements.txt ``
+```sh
+$ pip install -r requirements.txt
+```
+- DB creating : 
+```sh
+$ python manage.oy createdb
+```
+- Run server : 
+```sh
+$ python manage.oy runserver
+```
 
-- DB creating
-``python manage.oy createdb``
 
 # Analysis
 
