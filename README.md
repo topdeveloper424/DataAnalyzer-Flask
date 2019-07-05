@@ -4,4 +4,4 @@
 There is a cookiecutter version of this repo at [https://github.com/JackStouffer/cookiecutter-Flask-Foundation](https://github.com/JackStouffer/cookiecutter-Flask-Foundation).
 
 This is flask app to analysis electricvales
-https://github.com/harrybenit424/DataAnalyzer/issues/1#issue-464677973
+https://user-images.githubusercontent.com/40516126/60730775-7cc9c280-9f78-11e9-9eaa-696107ec9b33.png
