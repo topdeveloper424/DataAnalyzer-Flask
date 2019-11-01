@@ -9,7 +9,7 @@ Flask_Assets==0.12
 Flask_Cache==0.13.1
 Flask_WTF==0.14.2
 pandas==0.23.4
-Werkzeug==0.14.1
+Werkzeug==0.15.3
 Flask_SQLAlchemy==2.3.2
 Flask_Bootstrap==3.3.7.1
 gunicorn
